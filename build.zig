@@ -23,6 +23,9 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+    // Link against Raylib library
+    exe.linkSystemLibrary("raylib");
+    exe.linkLibC();
 
     b.installArtifact(exe);
 
