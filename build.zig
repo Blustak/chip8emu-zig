@@ -1,21 +1,17 @@
 const std = @import("std");
 
+const PIXEL_WIDTH = 64;
+const PIXEL_HEIGHT = 32;
+const PIXEL_SCALE = 20;
 //Testing bits taken from the zig docs.
-const test_targets = [_]std.Target.Query{
-    .{}, //native
-    .{
-        .cpu_arch = .x86_64,
-        .os_tag = .linux,
-    },
-    .{
-        .cpu_arch = .aarch64,
-        .os_tag = .macos,
-    },
-};
 
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const pixel_scale = b.option(usize, "scale", "scale of each chip-8 pixel") orelse PIXEL_SCALE;
+
+    const options = b.addOptions();
+    options.addOption(usize, "pixel_scale", pixel_scale);
 
     const exe = b.addExecutable(.{
         .name = "chip8-emulator",
@@ -35,13 +31,12 @@ pub fn build(b: *std.Build) !void {
     run_step.dependOn(&run_exe.step);
 
     const test_step = b.step("test", "Run unit tests");
-    for (test_targets) |test_target| {
-        const unit_tests = b.addTest(.{
-            .root_source_file = b.path("src/main.zig"),
-            .target = b.resolveTargetQuery(test_target),
-        });
-        const run_unit_tests = b.addRunArtifact(unit_tests);
-        run_unit_tests.skip_foreign_checks = true;
-        test_step.dependOn(&run_unit_tests.step);
-    }
+    const unit_tests = b.addTest(.{
+        .root_source_file = b.path("src/test.zig"),
+    });
+    unit_tests.linkSystemLibrary("raylib");
+    unit_tests.linkLibC();
+
+    const run_unit_tests = b.addRunArtifact(unit_tests);
+    test_step.dependOn(&run_unit_tests.step);
 }
