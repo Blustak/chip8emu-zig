@@ -1,14 +1,12 @@
-const rl = @cImport({
-    @cInclude("raylib.h");
-});
+const rl = @import("raylib").rl;
 const std = @import("std");
 const assert = std.debug.assert;
 
-const PIXEL_WIDTH = 64;
-const PIXEL_HEIGHT = 32;
-const PIXEL_SCALE = 20;
-const SCREEN_WIDTH = PIXEL_WIDTH * PIXEL_SCALE;
-const SCREEN_HEIGHT = PIXEL_HEIGHT * PIXEL_SCALE;
+const PIXEL_WIDTH:i32 = 64;
+const PIXEL_HEIGHT:i32 = 32;
+const PIXEL_SCALE:i32 = 20;
+const SCREEN_WIDTH:i32 = PIXEL_WIDTH * PIXEL_SCALE;
+const SCREEN_HEIGHT:i32 = PIXEL_HEIGHT * PIXEL_SCALE;
 
 const BACKGROUND_COLOUR = rl.BLACK;
 const FOREGROUND_COLOR = rl.GREEN;
@@ -41,7 +39,7 @@ const alloc = gpa.allocator();
 
 var event_stack: std.ArrayList(*const DrawEvent) = undefined;
 
-var vram: [PIXEL_HEIGHT][PIXEL_WIDTH]bool = .{.{false} ** PIXEL_WIDTH} ** PIXEL_HEIGHT;
+pub var vram: [PIXEL_HEIGHT][PIXEL_WIDTH]bool = .{.{false} ** PIXEL_WIDTH} ** PIXEL_HEIGHT;
 pub const Sprite = struct {
     data: []const [8]bool,
 };
@@ -65,26 +63,23 @@ pub fn deinit() void {
 }
 
 pub fn draw() void {
-    while (!rl.WindowShouldClose()) {
-        rl.BeginDrawing();
-        defer rl.EndDrawing();
+    rl.BeginDrawing();
+    defer rl.EndDrawing();
 
-        rl.ClearBackground(BACKGROUND_COLOUR);
-        while (event_stack.pop()) |ev| {
-            ev.write(&vram);
-        }
+    rl.ClearBackground(BACKGROUND_COLOUR);
+    while (event_stack.pop()) |ev| {
+        ev.write(&vram);
+    }
 
-        @setEvalBranchQuota((SCREEN_HEIGHT * SCREEN_WIDTH) + 1);
-        inline for (vram, 0..) |row, y| {
-            inline for (row, 0..) |px, x| {
-                rl.DrawRectangle(
-                    x * PIXEL_SCALE,
-                    y * PIXEL_SCALE,
-                    (x + 1) * PIXEL_SCALE,
-                    (y + 1) * PIXEL_SCALE,
-                    if (px) FOREGROUND_COLOR else BACKGROUND_COLOUR,
-                );
-            }
+    for (vram, 0..) |row, y| {
+        for (row, 0..) |px, x| {
+            rl.DrawRectangle(
+                @as(i32, @intCast(x)) * PIXEL_SCALE,
+                @as(i32, @intCast(y)) * PIXEL_SCALE,
+                @as(i32, @intCast(x + 1)) * PIXEL_SCALE,
+                @as(i32, @intCast(y + 1)) * PIXEL_SCALE,
+                if (px) FOREGROUND_COLOR else BACKGROUND_COLOUR,
+            );
         }
     }
 }

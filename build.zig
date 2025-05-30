@@ -8,6 +8,15 @@ const PIXEL_SCALE = 20;
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const rl = b.addModule("raylib", .{
+        .link_libc = true,
+        .root_source_file = b.path("src/rl.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    rl.linkSystemLibrary("raylib", .{
+        .needed = true,
+    });
     const pixel_scale = b.option(usize, "scale", "scale of each chip-8 pixel") orelse PIXEL_SCALE;
 
     const options = b.addOptions();
@@ -19,12 +28,13 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    // Link against Raylib library
-    exe.linkSystemLibrary("raylib");
-    exe.linkLibC();
+
+    exe.root_module.addImport("raylib", rl);
+
+
+
 
     b.installArtifact(exe);
-
     const run_exe = b.addRunArtifact(exe);
 
     const run_step = b.step("run", "Run the executable");
