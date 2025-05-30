@@ -1,7 +1,8 @@
 const renderer = @import("renderer.zig");
 
 pub fn main() !void {
-    renderer.init();
+    try renderer.init();
     defer renderer.deinit();
+
     renderer.draw();
 }
