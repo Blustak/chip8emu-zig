@@ -10,6 +10,7 @@ var audio_freq:f32 = frequency;
 var prev_freq:f32 = 1.0;
 var sineIdx:f32 = 0.0;
 
+// All of this is basically ripped from the raylib raw audio stream examples.
 
 var audio_stream:rl.AudioStream = undefined;
 var data:?*anyopaque = undefined;
