@@ -149,12 +149,6 @@ fn shl_rx(code: u16) void {
     rV[15] = res[1];
 }
 
-fn sne_rx_ry(code: u16) void {
-    if (rV[get_x(code)] != rV[get_y(code)]) {
-        pc += 2;
-    }
-}
-
 fn ld_ri_addr(code:u16) void {
     rI = get_addr(code);
 }
